@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 40px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      background: #0088cc;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Salom Mini App 👋</h1>
+  <p id="user"></p>
+
+  <button onclick="showAlert()">Bos!</button>
+
+  <script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+
+    document.getElementById("user").innerText =
+      "Foydalanuvchi: " + (tg.initDataUnsafe.user?.first_name || "Noma'lum");
+
+    function showAlert() {
+      alert("Ishlayapti ✅");
+    }
+  </script>
+
+</body>
+</html>
