@@ -1,43 +1,669 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>My Mini App</title>
+  <meta charset="UTF-8" />
+  <title>Bot Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: Arial;
-      text-align: center;
-      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 { color: #333; margin-bottom: 15px; font-size: 28px; }
+
+    .user-info {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .user-info p { margin: 8px 0; color: #555; }
+    .user-info strong { color: #333; }
+
+    .section {
+      margin: 18px 0;
+      padding: 14px;
+      border-radius: 12px;
+      background: #fafafa;
+      border: 1px solid #eee;
+      text-align: left;
+    }
+
+    .section h2 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin: 10px 0 6px;
+    }
+
+    select, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      outline: none;
+      background: white;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
     button {
-      padding: 10px 20px;
-      font-size: 18px;
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 16px;
       border-radius: 10px;
       border: none;
-      background: #0088cc;
       color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+
+    .btn-secondary { background: #0088cc; }
+    .btn-secondary:hover { background: #0078b0; transform: translateY(-2px); }
+
+    .btn-danger { background: #e74c3c; }
+    .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
+
+    .result {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      display: none;
+      text-align: center;
+    }
+    .result.show { display: block; }
+
+    .counter {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #777;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 500px;
+      width: 95%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .close-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .category-btn {
+      padding: 10px 15px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: all 0.3s;
+      color: #555;
+    }
+
+    .category-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .category-btn:hover {
+      border-color: #667eea;
+    }
+
+    .info-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-item h4 {
+      color: #667eea;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .info-item p {
+      color: #555;
+      line-height: 1.6;
+      margin: 5px 0;
+    }
+
+    .btn-info {
+      background: #17a2b8;
+    }
+
+    .btn-info:hover {
+      background: #138496;
+      transform: translateY(-2px);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-save {
+      background: #27ae60;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .btn-save:hover {
+      background: #229954;
+    }
+
+    .btn-edit {
+      background: #f39c12;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .btn-edit:hover {
+      background: #e67e22;
+    }
+
+    .edit-form {
+      display: none;
+    }
+
+    .edit-form.active {
+      display: block;
+    }
+
+    .display-content {
+      display: block;
+    }
+
+    .display-content.hidden {
+      display: none;
     }
   </style>
 </head>
+
 <body>
+  <div class="container">
+    <h1>📱 Mushkulbot Mini App</h1>
 
-  <h1>Salom Mini App 👋</h1>
-  <p id="user"></p>
+    <div class="user-info">
+      <p><strong>👤 Foydalanuvchi:</strong> <span id="user">Yuklanmoqda...</span></p>
+      <p><strong>🆔 ID:</strong> <span id="userId">-</span></p>
+    </div>
 
-  <button onclick="showAlert()">Bos!</button>
+    <div class="result" id="result">
+      <p id="resultText"></p>
+    </div>
+
+    <!-- ✅ SO‘ROVNOMA QISMI (YANGI) -->
+    <div class="section">
+      <h2>📝 So‘rovnoma</h2>
+
+      <label for="service">Qaysi xizmatdan foydalanmoqchisiz?</label>
+      <select id="service">
+        <option value="" selected disabled>Tanlang...</option>
+        <option value="Konsultatsiya">Konsultatsiya</option>
+        <option value="Hujjat tayyorlash">Hujjat tayyorlash</option>
+        <option value="Tarjima">Tarjima</option>
+        <option value="IT yordam">IT yordam</option>
+        <option value="Boshqa">Boshqa</option>
+      </select>
+
+      <label for="note">Izoh (ixtiyoriy)</label>
+      <textarea id="note" placeholder="Masalan: qaysi mavzu, qachonga kerak, qo‘shimcha ma’lumot..."></textarea>
+
+      <p class="hint">“📤 So‘rov yuborish” bossangiz tanlov botga jo‘natiladi.</p>
+    </div>
+
+    <div class="counter">
+      Soni: <span id="counter">0</span>
+    </div>
+
+    <button class="btn-primary" onclick="increment()">➕ Yangilash</button>
+    <!-- ✅ Yangi Button: Hayoti, Oilasi, O'qish, Yutuqlari haqida ma'lumot -->
+    <button class="btn-info" onclick="openInfoModal()">ℹ️ Hayoti, Oilasi, O'qish & Yutuqlari</button>
+    <!-- ✅ Tugma nomini aniqlashtirdim -->
+    <button class="btn-secondary" onclick="sendSurvey()">📤 So‘rov yuborish</button>
+
+    <button class="btn-danger" onclick="resetCounter()">🔄 Qayta o'rnatish</button>
+  </div>
+
+  <!-- ✅ MODAL OYNA: Hayoti, Oilasi, O'qish, Yutuqlari -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modalTitle">Ma'lumotlar</span>
+        <button class="close-btn" onclick="closeInfoModal()">✕</button>
+      </div>
+
+      <div class="category-tabs">
+        <button class="category-btn active" onclick="showCategory('hayoti')">🧬 Hayoti</button>
+        <button class="category-btn" onclick="showCategory('oilasi')">👨‍👩‍👧‍👦 Oilasi</button>
+        <button class="category-btn" onclick="showCategory('oqish')">📚 O'qish</button>
+        <button class="category-btn" onclick="showCategory('yutuqlari')">🏆 Yutuqlari</button>
+      </div>
+
+      <!-- DISPLAY MODE (Ko'rish rejimi) -->
+      <div id="displayContent" class="display-content">
+        <div id="categoryContent"></div>
+        <div class="modal-actions">
+          <button class="btn-edit" onclick="toggleEditMode()">✏️ Tahrirlash</button>
+        </div>
+      </div>
+
+      <!-- EDIT MODE (Tahrirlash rejimi) -->
+      <div id="editForm" class="edit-form">
+        <div id="formContent"></div>
+        <div class="modal-actions">
+          <button class="btn-save" onclick="saveUserData()">💾 Saqlash</button>
+          <button class="btn-edit" onclick="toggleEditMode()">❌ Bekor qilish</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    let tg = window.Telegram.WebApp;
+    // Telegram WebApp Init
+    const tg = window.Telegram.WebApp;
+
+    // Mini appni kengaytirish
     tg.expand();
 
-    document.getElementById("user").innerText =
-      "Foydalanuvchi: " + (tg.initDataUnsafe.user?.first_name || "Noma'lum");
+    // Agar xohlasangiz confirmation qolsin; xohlamasangiz comment qilib qo‘ying
+    tg.enableClosingConfirmation();
 
-    function showAlert() {
-      alert("Ishlayapti ✅");
+    // counter localStorage’dan
+    let counter = Number(localStorage.getItem('counter') || 0);
+    updateDisplay();
+
+    // Foydalanuvchi ma'lumotini ko'rsatish
+    function displayUserInfo() {
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        document.getElementById('user').innerText = (user.first_name || '') + ' ' + (user.last_name || '');
+        document.getElementById('userId').innerText = user.id ?? '-';
+      } else {
+        // Telegram ichidan ochilmagan bo‘lsa (brauzer testda)
+        document.getElementById('user').innerText = "Noma'lum (Telegram emas)";
+        document.getElementById('userId').innerText = "-";
+      }
     }
-  </script>
 
+    function increment() {
+      counter++;
+      localStorage.setItem('counter', String(counter));
+      updateDisplay();
+      showResult('Hisobingiz yangilandi! ✅');
+    }
+
+    function resetCounter() {
+      counter = 0;
+      localStorage.setItem('counter', String(counter));
+      updateDisplay();
+      showResult('Hisobingiz qayta o\'rnatildi! 🔄');
+    }
+
+    // ✅ SO‘ROVNOMANI BOTGA YUBORISH (YANGI)
+    function sendSurvey() {
+      const serviceEl = document.getElementById('service');
+      const noteEl = document.getElementById('note');
+
+      const service = serviceEl.value;
+      const note = (noteEl.value || '').trim();
+
+      if (!service) {
+        showResult("Iltimos, xizmatni tanlang ✅");
+        return;
+      }
+
+      const u = tg.initDataUnsafe?.user;
+
+      const data = {
+        type: "survey",
+        service: service,
+        note: note,
+        counter: counter,
+        user: {
+          id: u?.id ?? null,
+          first_name: u?.first_name ?? null,
+          last_name: u?.last_name ?? null,
+          username: u?.username ?? null
+        },
+        // uz-UZ ayrim kompyuterlarda boshqa format berishi mumkin — baribir OK
+        timestamp: new Date().toISOString()
+      };
+
+      tg.sendData(JSON.stringify(data));
+      showResult("So‘rov yuborildi! 📤");
+
+      // xohlasangiz yuborgandan keyin yopilsin:
+      // tg.close();
+    }
+
+    function showResult(message) {
+      const resultDiv = document.getElementById('result');
+      document.getElementById('resultText').innerText = message;
+      resultDiv.classList.add('show');
+      setTimeout(() => resultDiv.classList.remove('show'), 2200);
+    }
+
+    function updateDisplay() {
+      document.getElementById('counter').innerText = String(counter);
+    }
+
+    // ✅ MODAL OYNA FUNKTSIYALARI - FOYDALANUVCHINING MA'LUMOTLARI
+    let currentCategory = 'hayoti';
+    let isEditMode = false;
+
+    const formFields = {
+      hayoti: [
+        { label: "👤 Ismingiz", key: "name", placeholder: "Toshtemirov Mirshoxid" },
+        { label: "📖 Statusingiz", key: "status", placeholder: "Dasturchi, O'qituvchi, etc." },
+        { label: "💭 Sizni tavsify qiling (qisqacha)", key: "description", placeholder: "Siz kimsiniz?" },
+        { label: "🎯 Asosiy Maqsadingiz", key: "goal", placeholder: "Nima uchun shu ishlayapsiz?" }
+      ],
+      oilasi: [
+        { label: "👨‍👩‍👧‍👦 Oila Tarkibi", key: "family_structure", placeholder: "Oila haqida yozing..." },
+        { label: "❤️ Sizga Muhim Qiymatlar", key: "values", placeholder: "Oila, ta'lim, mehnat, etc." },
+        { label: "🏠 Oila Tamoyili", key: "motto", placeholder: "Oila devizi yoki tamoyili..." }
+      ],
+      oqish: [
+        { label: "🎓 Ta'lim Darajasi", key: "education_level", placeholder: "Maktab, Kolej, Universiteti, etc." },
+        { label: "📚 O'qish Sohalari", key: "study_areas", placeholder: "Dasturlash, Matematika, O'zbek tili, etc." },
+        { label: "📖 O'qitgan/O'rganish Manbalar", key: "learning_sources", placeholder: "Online kurslar, kitoblar, mentorlar, etc." },
+        { label: "🎯 O'qish Maqsadi", key: "study_goal", placeholder: "Nima uchun bu sohllarni o'qiysiz?" }
+      ],
+      yutuqlari: [
+        { label: "🌟 Asosiy Yutuqlar", key: "achievements", placeholder: "Nima qilib bitirdingiz? Nima tayyorladdingiz?" },
+        { label: "💻 Texnologik Loyihalar", key: "projects", placeholder: "Yaratgan botlar, saytlar, applar, etc." },
+        { label: "🎓 Bilakashliklar/Malakalar", key: "skills", placeholder: "Qanday ishlashni bilasiz?" },
+        { label: "🚀 Kelajakdagi Maqsadlar", key: "future_goals", placeholder: "Keyingi nima qilasiz?" }
+      ]
+    };
+
+    // localStorage'dan foydalanuvchi ma'lumotlarini olish
+    function getUserData() {
+      const data = localStorage.getItem('userProfileData');
+      return data ? JSON.parse(data) : {};
+    }
+
+    // localStorage ga foydalanuvchi ma'lumotlarini saqlash
+    function saveUserProfile(data) {
+      localStorage.setItem('userProfileData', JSON.stringify(data));
+    }
+
+    // Display mode: foydalanuvchining ma'lumotlarini ko'rsatish
+    function renderDisplayMode() {
+      const userData = getUserData();
+      const fields = formFields[currentCategory];
+      let html = '';
+
+      fields.forEach(field => {
+        const value = userData[field.key] || '(kiritmagan)';
+        const displayValue = value === '(kiritmagan)' ? `<em style="color: #999;">${value}</em>` : value;
+        html += `
+          <div class="info-item">
+            <h4>${field.label}</h4>
+            <p>${displayValue}</p>
+          </div>
+        `;
+      });
+
+      document.getElementById('categoryContent').innerHTML = html;
+    }
+
+    // Edit mode: tahrirlash formini ko'rsatish
+    function renderEditMode() {
+      const userData = getUserData();
+      const fields = formFields[currentCategory];
+      let html = '';
+
+      fields.forEach(field => {
+        const value = userData[field.key] || '';
+        if (field.label.includes('Loyihalar') || field.label.includes('O\'qitgan') || field.label.includes('Mabulkashlik') || field.label.includes('Maqsadlar')) {
+          html += `
+            <div class="form-group">
+              <label>${field.label}</label>
+              <textarea id="field_${field.key}" placeholder="${field.placeholder}">${value}</textarea>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="form-group">
+              <label>${field.label}</label>
+              <input type="text" id="field_${field.key}" placeholder="${field.placeholder}" value="${value}">
+            </div>
+          `;
+        }
+      });
+
+      document.getElementById('formContent').innerHTML = html;
+    }
+
+    function openInfoModal() {
+      const modal = document.getElementById('infoModal');
+      modal.classList.add('show');
+      isEditMode = false;
+      showCategory('hayoti');
+    }
+
+    function closeInfoModal() {
+      const modal = document.getElementById('infoModal');
+      modal.classList.remove('show');
+      isEditMode = false;
+    }
+
+    function showCategory(category) {
+      currentCategory = category;
+      const buttons = document.querySelectorAll('.category-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      if (window.event && window.event.target && window.event.target.classList.contains('category-btn')) {
+        window.event.target.classList.add('active');
+      } else {
+        // Find the button with the matching category if possible
+        buttons.forEach(btn => {
+            if (btn.innerText.toLowerCase().includes(category)) {
+                btn.classList.add('active');
+            }
+        });
+      }
+
+      const categoryTitles = {
+        hayoti: "🧬 Mening Hayotim",
+        oilasi: "👨‍👩‍👧‍👦 Mening Oilam",
+        oqish: "📚 Mening O'qishim",
+        yutuqlari: "🏆 Mening Yutuqlarim"
+      };
+
+      document.getElementById('modalTitle').innerText = categoryTitles[category];
+
+      if (isEditMode) {
+        renderEditMode();
+      } else {
+        renderDisplayMode();
+      }
+    }
+
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      
+      const displayContent = document.getElementById('displayContent');
+      const editForm = document.getElementById('editForm');
+
+      if (isEditMode) {
+        displayContent.classList.add('hidden');
+        editForm.classList.add('active');
+        renderEditMode();
+      } else {
+        displayContent.classList.remove('hidden');
+        editForm.classList.remove('active');
+        renderDisplayMode();
+      }
+    }
+
+    function saveUserData() {
+      const userData = getUserData();
+      const fields = formFields[currentCategory];
+
+      fields.forEach(field => {
+        const inputElement = document.getElementById(`field_${field.key}`);
+        if (inputElement) {
+          userData[field.key] = inputElement.value || field.placeholder;
+        }
+      });
+
+      saveUserProfile(userData);
+      showResult("Ma'lumotlar saqlandi! 💾");
+      
+      // yangilash
+      isEditMode = false;
+      renderDisplayMode();
+    }
+
+    // Modal do'stasini yopish
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('infoModal');
+      if (event.target === modal) {
+        closeInfoModal();
+      }
+    });
+
+    displayUserInfo();
+  </script>
 </body>
 </html>
